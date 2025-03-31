@@ -1,762 +1,746 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+]<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2575.4">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UnderAssault Bracket Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        /* Basic styling for better readability */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* gray-100 */
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.5rem; /* rounded-lg */
+            padding: 1.5rem; /* p-6 */
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* shadow-md */
+            margin-bottom: 1rem; /* mb-4 */
+        }
+        .team-card h3 {
+            font-size: 1.125rem; /* text-lg */
+            font-weight: 600; /* font-semibold */
+            margin-bottom: 0.5rem; /* mb-2 */
+            color: #1f2937; /* gray-800 */
+        }
+        .player-info {
+            font-size: 0.875rem; /* text-sm */
+            color: #4b5563; /* gray-600 */
+            margin-bottom: 0.25rem; /* mb-1 */
+        }
+         .player-info .role {
+             font-weight: bold;
+             color: #1d4ed8; /* blue-700 */
+         }
+        .prediction-section h3, .results-section h3, #matchup-preview-section h3 {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 600; /* font-semibold */
+            margin-bottom: 1rem; /* mb-4 */
+            color: #111827; /* gray-900 */
+        }
+        select, button {
+            padding: 0.5rem 1rem; /* py-2 px-4 */
+            border-radius: 0.375rem; /* rounded-md */
+            border: 1px solid #d1d5db; /* border-gray-300 */
+            margin-top: 0.25rem; /* mt-1 */
+            margin-bottom: 0.75rem; /* mb-3 */
+        }
+        button {
+            background-color: #3b82f6; /* bg-blue-500 */
+            color: white;
+            font-weight: 500; /* font-medium */
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #2563eb; /* hover:bg-blue-600 */
+        }
+        button:disabled {
+            background-color: #9ca3af; /* bg-gray-400 */
+            cursor: not-allowed;
+        }
+        .result-item {
+            margin-bottom: 0.5rem; /* mb-2 */
+            padding: 0.75rem; /* p-3 */
+            background-color: #e5e7eb; /* bg-gray-200 */
+            border-radius: 0.375rem; /* rounded-md */
+        }
+        .accuracy-display {
+            margin-top: 1rem; /* mt-4 */
+            font-weight: 600; /* font-semibold */
+            font-size: 1.125rem; /* text-lg */
+        }
+        .correct-prediction {
+            color: #16a34a; /* text-green-600 */
+        }
+        .incorrect-prediction {
+            color: #dc2626; /* text-red-600 */
+        }
+
+         /* Matchup Preview Styles */
+        .matchup-preview {
+             margin-top: 1rem; /* mt-4 */
+             padding: 1rem; /* p-4 */
+             background-color: #eef2ff; /* indigo-50 */
+             border: 1px solid #c7d2fe; /* indigo-200 */
+             border-radius: 0.375rem; /* rounded-md */
+             font-size: 0.875rem; /* text-sm */
+        }
+        .matchup-preview h4 {
+             font-weight: 600; /* font-semibold */
+             margin-bottom: 0.5rem; /* mb-2 */
+             color: #3730a3; /* indigo-800 */
+        }
+        .sub-contest-preview {
+             margin-bottom: 0.25rem; /* mb-1 */
+             color: #4338ca; /* indigo-700 */
+        }
+         .sub-contest-preview strong {
+             color: #312e81; /* indigo-900 */
+         }
+
+        /* Simple bracket visualization styles */
+        .bracket {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start; /* Align items to the top */
+            margin-top: 2rem; /* mt-8 */
+            padding: 1rem; /* p-4 */
+            background-color: #e5e7eb; /* bg-gray-200 */
+            border-radius: 0.5rem; /* rounded-lg */
+            min-height: 250px; /* Ensure space for lines */
+            position: relative; /* Needed for absolute positioning of lines */
+        }
+        .round {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3rem; /* gap-12 */
+            width: 150px; /* Fixed width for rounds */
+        }
+        .match {
+            background-color: white;
+            padding: 0.75rem; /* p-3 */
+            border: 1px solid #d1d5db; /* border-gray-300 */
+            border-radius: 0.375rem; /* rounded-md */
+            text-align: center;
+            width: 100%;
+            position: relative; /* For connecting lines */
+            font-size: 0.875rem; /* text-sm */
+        }
+         .match-winner {
+            font-weight: bold;
+            margin-top: 0.25rem; /* mt-1 */
+            color: #1d4ed8; /* blue-700 */
+         }
+        .connector {
+            position: absolute;
+            border-color: #6b7280; /* gray-500 */
+            border-style: solid;
+        }
+        /* Basic lines - adjust as needed */
+        .line-r1-m1-to-finals {
+            position: absolute;
+            left: calc(33.33% + 75px); /* Center of Round 1 + half width of match */
+            top: calc(25% + 20px); /* Adjust vertical position */
+            width: calc(33.33% - 75px); /* Width to reach center */
+            height: 1px;
+            border-top-width: 1px;
+        }
+         .line-r1-m2-to-finals {
+            position: absolute;
+            left: calc(33.33% + 75px); /* Center of Round 1 + half width of match */
+            top: calc(75% - 20px); /* Adjust vertical position */
+            width: calc(33.33% - 75px); /* Width to reach center */
+            height: 1px;
+            border-top-width: 1px;
+        }
+         .line-finals-connector {
+             position: absolute;
+             left: calc(66.66% - 1px); /* Center between R1 and Finals */
+             top: calc(25% + 20px);
+             width: 1px;
+             height: calc(50% - 40px); /* Height between the two horizontal lines */
+             border-left-width: 1px;
+         }
+         .line-finals-to-winner {
+            position: absolute;
+            left: calc(66.66% + 75px); /* Center of Finals + half width */
+            top: 50%;
+            width: calc(33.33% - 75px);
+            height: 1px;
+            border-top-width: 1px;
+         }
+
+    </style>
 </head>
-<body>
-<p class="p1">&lt;!DOCTYPE html&gt;</p>
-<p class="p1">&lt;html lang="en"&gt;</p>
-<p class="p1">&lt;head&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;UnderAssault Bracket Simulator&lt;/title&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>tailwind.config = {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>theme: {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>extend: {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>fontFamily: {</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>sans: ['Inter', 'sans-serif'],</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>},</p>
-<p class="p1"><span class="Apple-converted-space">                </span>},</p>
-<p class="p1"><span class="Apple-converted-space">            </span>},</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* Basic styling for better readability */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>body {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-family: 'Inter', sans-serif;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-color: #f3f4f6; /* gray-100 */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.card {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-color: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 0.5rem; /* rounded-lg */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 1.5rem; /* p-6 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* shadow-md */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 1rem; /* mb-4 */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.team-card h3 {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 1.125rem; /* text-lg */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600; /* font-semibold */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 0.5rem; /* mb-2 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #1f2937; /* gray-800 */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.player-info {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.875rem; /* text-sm */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #4b5563; /* gray-600 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 0.25rem; /* mb-1 */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">         </span>.player-info .role {</p>
-<p class="p1"><span class="Apple-converted-space">             </span>font-weight: bold;</p>
-<p class="p1"><span class="Apple-converted-space">             </span>color: #1d4ed8; /* blue-700 */</p>
-<p class="p1"><span class="Apple-converted-space">         </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.prediction-section h3, .results-section h3, #matchup-preview-section h3 {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 1.25rem; /* text-xl */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600; /* font-semibold */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 1rem; /* mb-4 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #111827; /* gray-900 */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>select, button {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 0.5rem 1rem; /* py-2 px-4 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 0.375rem; /* rounded-md */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: 1px solid #d1d5db; /* border-gray-300 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-top: 0.25rem; /* mt-1 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 0.75rem; /* mb-3 */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>button {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-color: #3b82f6; /* bg-blue-500 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 500; /* font-medium */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>transition: background-color 0.2s;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>button:hover {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-color: #2563eb; /* hover:bg-blue-600 */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>button:disabled {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-color: #9ca3af; /* bg-gray-400 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>cursor: not-allowed;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.result-item {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 0.5rem; /* mb-2 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 0.75rem; /* p-3 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-color: #e5e7eb; /* bg-gray-200 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 0.375rem; /* rounded-md */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.accuracy-display {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-top: 1rem; /* mt-4 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: 600; /* font-semibold */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 1.125rem; /* text-lg */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.correct-prediction {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #16a34a; /* text-green-600 */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.incorrect-prediction {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #dc2626; /* text-red-600 */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">         </span>/* Matchup Preview Styles */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.matchup-preview {</p>
-<p class="p1"><span class="Apple-converted-space">             </span>margin-top: 1rem; /* mt-4 */</p>
-<p class="p1"><span class="Apple-converted-space">             </span>padding: 1rem; /* p-4 */</p>
-<p class="p1"><span class="Apple-converted-space">             </span>background-color: #eef2ff; /* indigo-50 */</p>
-<p class="p1"><span class="Apple-converted-space">             </span>border: 1px solid #c7d2fe; /* indigo-200 */</p>
-<p class="p1"><span class="Apple-converted-space">             </span>border-radius: 0.375rem; /* rounded-md */</p>
-<p class="p1"><span class="Apple-converted-space">             </span>font-size: 0.875rem; /* text-sm */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.matchup-preview h4 {</p>
-<p class="p1"><span class="Apple-converted-space">             </span>font-weight: 600; /* font-semibold */</p>
-<p class="p1"><span class="Apple-converted-space">             </span>margin-bottom: 0.5rem; /* mb-2 */</p>
-<p class="p1"><span class="Apple-converted-space">             </span>color: #3730a3; /* indigo-800 */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.sub-contest-preview {</p>
-<p class="p1"><span class="Apple-converted-space">             </span>margin-bottom: 0.25rem; /* mb-1 */</p>
-<p class="p1"><span class="Apple-converted-space">             </span>color: #4338ca; /* indigo-700 */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">         </span>.sub-contest-preview strong {</p>
-<p class="p1"><span class="Apple-converted-space">             </span>color: #312e81; /* indigo-900 */</p>
-<p class="p1"><span class="Apple-converted-space">         </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* Simple bracket visualization styles */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.bracket {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>justify-content: space-around;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: flex-start; /* Align items to the top */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-top: 2rem; /* mt-8 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 1rem; /* p-4 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-color: #e5e7eb; /* bg-gray-200 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 0.5rem; /* rounded-lg */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>min-height: 250px; /* Ensure space for lines */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: relative; /* Needed for absolute positioning of lines */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.round {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>flex-direction: column;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>gap: 3rem; /* gap-12 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 150px; /* Fixed width for rounds */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.match {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>background-color: white;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>padding: 0.75rem; /* p-3 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border: 1px solid #d1d5db; /* border-gray-300 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 0.375rem; /* rounded-md */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: relative; /* For connecting lines */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.875rem; /* text-sm */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">         </span>.match-winner {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>font-weight: bold;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>margin-top: 0.25rem; /* mt-1 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>color: #1d4ed8; /* blue-700 */</p>
-<p class="p1"><span class="Apple-converted-space">         </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.connector {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: absolute;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-color: #6b7280; /* gray-500 */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-style: solid;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>/* Basic lines - adjust as needed */</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.line-r1-m1-to-finals {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: absolute;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>left: calc(33.33% + 75px); /* Center of Round 1 + half width of match */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>top: calc(25% + 20px); /* Adjust vertical position */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: calc(33.33% - 75px); /* Width to reach center */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: 1px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-top-width: 1px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">         </span>.line-r1-m2-to-finals {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: absolute;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>left: calc(33.33% + 75px); /* Center of Round 1 + half width of match */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>top: calc(75% - 20px); /* Adjust vertical position */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: calc(33.33% - 75px); /* Width to reach center */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: 1px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-top-width: 1px;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">         </span>.line-finals-connector {</p>
-<p class="p1"><span class="Apple-converted-space">             </span>position: absolute;</p>
-<p class="p1"><span class="Apple-converted-space">             </span>left: calc(66.66% - 1px); /* Center between R1 and Finals */</p>
-<p class="p1"><span class="Apple-converted-space">             </span>top: calc(25% + 20px);</p>
-<p class="p1"><span class="Apple-converted-space">             </span>width: 1px;</p>
-<p class="p1"><span class="Apple-converted-space">             </span>height: calc(50% - 40px); /* Height between the two horizontal lines */</p>
-<p class="p1"><span class="Apple-converted-space">             </span>border-left-width: 1px;</p>
-<p class="p1"><span class="Apple-converted-space">         </span>}</p>
-<p class="p1"><span class="Apple-converted-space">         </span>.line-finals-to-winner {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>position: absolute;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>left: calc(66.66% + 75px); /* Center of Finals + half width */</p>
-<p class="p1"><span class="Apple-converted-space">            </span>top: 50%;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>width: calc(33.33% - 75px);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>height: 1px;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>border-top-width: 1px;</p>
-<p class="p1"><span class="Apple-converted-space">         </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
-<p class="p1">&lt;/head&gt;</p>
-<p class="p1">&lt;body class="p-6 md:p-10"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;h1 class="text-3xl font-bold mb-6 text-center text-gray-900"&gt;UnderAssault Bracket Simulator&lt;/h1&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;section id="team-display" class="mb-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;h2 class="text-2xl font-semibold mb-4 text-gray-800"&gt;Generated Teams &amp; Players (Roles Assigned)&lt;/h2&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/section&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;section id="prediction-section" class="card prediction-section mb-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;h3&gt;Make Your Predictions&lt;/h3&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="grid grid-cols-1 md:grid-cols-3 gap-6"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;label for="predict-match1" class="block font-medium text-gray-700"&gt;Match 1: Fuel vs Outlaws&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;select id="predict-match1" name="predict-match1"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option value=""&gt;-- Select Winner --&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option value="Fuel"&gt;Fuel&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option value="Outlaws"&gt;Outlaws&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/select&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div id="matchup-preview-1" class="matchup-preview"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;h4&gt;Matchup Preview:&lt;/h4&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;p class="text-gray-500"&gt;Generating preview...&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;label for="predict-match2" class="block font-medium text-gray-700"&gt;Match 2: Shock vs Dynasty&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;select id="predict-match2" name="predict-match2"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option value=""&gt;-- Select Winner --&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option value="Shock"&gt;Shock&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option value="Dynasty"&gt;Dynasty&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/select&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>&lt;div id="matchup-preview-2" class="matchup-preview"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                     </span>&lt;h4&gt;Matchup Preview:&lt;/h4&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                     </span>&lt;p class="text-gray-500"&gt;Generating preview...&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;label for="predict-match3" class="block font-medium text-gray-700"&gt;Match 3: Finals&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;select id="predict-match3" name="predict-match3"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option value=""&gt;-- Select Winner --&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option value="Fuel"&gt;Fuel&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option value="Outlaws"&gt;Outlaws&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                     </span>&lt;option value="Shock"&gt;Shock&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;option value="Dynasty"&gt;Dynasty&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/select&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>&lt;div class="matchup-preview border-dashed border-gray-400 bg-gray-100"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                     </span>&lt;h4 class="text-gray-600"&gt;Matchup Preview:&lt;/h4&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                     </span>&lt;p class="text-gray-500"&gt;Finals matchup depends on Round 1 results.&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">         </span>&lt;button id="simulate-button" class="mt-6"&gt;Simulate Bracket&lt;/button&gt; &lt;button id="regenerate-teams-button" class="mt-6 ml-2 bg-gray-500 hover:bg-gray-600"&gt;Regenerate Teams &amp; Roles&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/section&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;section id="bracket-visualization" class="mb-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;h2 class="text-2xl font-semibold mb-4 text-gray-800"&gt;Tournament Bracket&lt;/h2&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="bracket"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="round"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div id="bracket-m1" class="match"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;Fuel&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;vs&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;Outlaws&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div id="bracket-m1-winner" class="match-winner"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div id="bracket-m2" class="match"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;Shock&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;vs&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;Dynasty&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                     </span>&lt;div id="bracket-m2-winner" class="match-winner"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="round"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>&lt;div id="bracket-m3" class="match" style="margin-top: calc(50% - 40px);"&gt; &lt;div id="bracket-m3-t1"&gt;?&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div&gt;vs&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div id="bracket-m3-t2"&gt;?&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div id="bracket-m3-winner" class="match-winner"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="round"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>&lt;div id="bracket-winner" class="match" style="margin-top: calc(50% - 40px); background-color: #facc15;"&gt; &lt;div&gt;🏆 Winner 🏆&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                     </span>&lt;div id="bracket-final-winner" class="match-winner" style="font-size: 1rem;"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="line-r1-m1-to-finals connector"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="line-r1-m2-to-finals connector"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="line-finals-connector connector"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="line-finals-to-winner connector"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/section&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;section id="results-section" class="card results-section"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;h3&gt;Simulation Results&lt;/h3&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div id="results-log"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;p class="text-gray-500"&gt;Make predictions and click "Simulate Bracket" to see the results.&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div id="accuracy-display" class="accuracy-display"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/section&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// --- Global Variables ---</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const teamNames = ["Fuel", "Outlaws", "Shock", "Dynasty"];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const roles = ["DPS", "Tank", "Support"];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let teams = {}; // { teamName: { name: "TeamName", players: [playerObj...], assignedRoles: { DPS: player, Tank: player, Support: player } } }</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let simulationResults = {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>match1: null, // { winner: teamObj, loser: teamObj, score: [w, l] }</p>
-<p class="p1"><span class="Apple-converted-space">            </span>match2: null,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>match3: null,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>finalWinner: null</p>
-<p class="p1"><span class="Apple-converted-space">        </span>};</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let userPredictions = {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>match1: null,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>match2: null,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>match3: null</p>
-<p class="p1"><span class="Apple-converted-space">        </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// --- DOM Elements ---</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const teamDisplayDiv = document.getElementById('team-display').querySelector('.grid');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const predictMatch1Select = document.getElementById('predict-match1');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const predictMatch2Select = document.getElementById('predict-match2');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const predictMatch3Select = document.getElementById('predict-match3');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const matchupPreview1Div = document.getElementById('matchup-preview-1');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const matchupPreview2Div = document.getElementById('matchup-preview-2');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const simulateButton = document.getElementById('simulate-button');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const regenerateButton = document.getElementById('regenerate-teams-button');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const resultsLogDiv = document.getElementById('results-log');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const accuracyDisplayDiv = document.getElementById('accuracy-display');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const bracketM1Winner = document.getElementById('bracket-m1-winner');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const bracketM2Winner = document.getElementById('bracket-m2-winner');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const bracketM3T1 = document.getElementById('bracket-m3-t1');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const bracketM3T2 = document.getElementById('bracket-m3-t2');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const bracketM3Winner = document.getElementById('bracket-m3-winner');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const bracketFinalWinner = document.getElementById('bracket-final-winner');</p>
-<p class="p2"><br></p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// --- Core Logic ---</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/**</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* Generates a random integer between 0 and 100 (inclusive).</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* @returns {number} A random proficiency score.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>*/</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function generateRandomProficiency() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return Math.floor(Math.random() * 101);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/**</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* Creates a player object with random proficiencies for each role.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* @param {number} id - A unique identifier for the player within the team.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* @returns {object} Player object with id, dps, tank, and support proficiencies.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>*/</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function createPlayer(id) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>id: id,</p>
-<p class="p1"><span class="Apple-converted-space">                </span>dpsProficiency: generateRandomProficiency(),</p>
-<p class="p1"><span class="Apple-converted-space">                </span>tankProficiency: generateRandomProficiency(),</p>
-<p class="p1"><span class="Apple-converted-space">                </span>supportProficiency: generateRandomProficiency()</p>
-<p class="p1"><span class="Apple-converted-space">            </span>};</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/**</p>
-<p class="p1"><span class="Apple-converted-space">        </span>* Shuffles array in place using Fisher-Yates algorithm.</p>
-<p class="p1"><span class="Apple-converted-space">        </span>* @param {Array} array Array containing items.</p>
-<p class="p1"><span class="Apple-converted-space">        </span>*/</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function shuffleArray(array) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>for (let i = array.length - 1; i &gt; 0; i--) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const j = Math.floor(Math.random() * (i + 1));</p>
-<p class="p1"><span class="Apple-converted-space">                </span>[array[i], array[j]] = [array[j], array[i]];</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/**</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* Assigns roles randomly ONCE to the players of a team.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* @param {object} team - The team object (will be modified).</p>
-<p class="p1"><span class="Apple-converted-space">         </span>*/</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function assignRolesToTeam(team) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const playersCopy = [...team.players]; // Create a copy to shuffle</p>
-<p class="p1"><span class="Apple-converted-space">            </span>shuffleArray(playersCopy); // Randomize player order</p>
-<p class="p1"><span class="Apple-converted-space">            </span>team.assignedRoles = {}; // Store assigned roles directly on the team object</p>
-<p class="p1"><span class="Apple-converted-space">            </span>team.assignedRoles[roles[0]] = playersCopy[0]; // Assign first shuffled player to DPS</p>
-<p class="p1"><span class="Apple-converted-space">            </span>team.assignedRoles[roles[1]] = playersCopy[1]; // Assign second to Tank</p>
-<p class="p1"><span class="Apple-converted-space">            </span>team.assignedRoles[roles[2]] = playersCopy[2]; // Assign third to Support</p>
-<p class="p1"><span class="Apple-converted-space">            </span>console.log(`Assigned roles for ${team.name}:`, team.assignedRoles);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/**</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* Generates a team with a given name and 3 players, and assigns roles.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* @param {string} name - The name of the team.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* @returns {object} Team object containing name, players array, and assignedRoles object.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>*/</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function generateTeam(name) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const players = [createPlayer(1), createPlayer(2), createPlayer(3)];</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const team = { name: name, players: players, assignedRoles: null };</p>
-<p class="p1"><span class="Apple-converted-space">            </span>assignRolesToTeam(team); // Assign roles immediately</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return team;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/**</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* Generates all four teams and assigns roles.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>*/</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function generateAllTeamsAndRoles() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>teams = {}; // Reset teams</p>
-<p class="p1"><span class="Apple-converted-space">            </span>teamNames.forEach(name =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>teams[name] = generateTeam(name); // generateTeam now assigns roles</p>
-<p class="p1"><span class="Apple-converted-space">            </span>});</p>
-<p class="p1"><span class="Apple-converted-space">            </span>console.log("Generated Teams with Roles:", JSON.parse(JSON.stringify(teams))); // Log deep copy</p>
-<p class="p1"><span class="Apple-converted-space">             </span>// Update prediction dropdowns for Match 3 (Finals) - still needed</p>
-<p class="p1"><span class="Apple-converted-space">            </span>updateFinalsPredictionDropdown();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">         </span>/**</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* Updates the options in the Finals prediction dropdown.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>*/</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function updateFinalsPredictionDropdown() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>predictMatch3Select.innerHTML = '&lt;option value=""&gt;-- Select Winner --&lt;/option&gt;'; // Clear existing options</p>
-<p class="p1"><span class="Apple-converted-space">            </span>teamNames.forEach(name =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>const option = document.createElement('option');</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>option.value = name;</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>option.textContent = name;</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>predictMatch3Select.appendChild(option);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>});</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/**</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* Displays the generated teams, their players, and assigned roles in the UI.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>*/</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function displayTeams() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>teamDisplayDiv.innerHTML = ''; // Clear previous display</p>
-<p class="p1"><span class="Apple-converted-space">            </span>teamNames.forEach(name =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const team = teams[name];</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (!team || !team.players || !team.assignedRoles) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>console.error("Team data incomplete for display:", name, team);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>return; // Skip incomplete teams</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const card = document.createElement('div');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>card.className = 'card team-card';</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>// Find role for each player</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const playerRoles = {};</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>Object.entries(team.assignedRoles).forEach(([role, player]) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                     </span>playerRoles[player.id] = role;</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>});</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>let playersHtml = team.players.map(p =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>const assignedRole = playerRoles[p.id] || 'N/A'; // Find the role assigned to this player</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>return `&lt;div class="player-info"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>&lt;strong&gt;Player ${p.id} (&lt;span class="role"&gt;${assignedRole}&lt;/span&gt;):&lt;/strong&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>DPS: ${p.dpsProficiency}, Tank: ${p.tankProficiency}, Support: ${p.supportProficiency}</p>
-<p class="p1"><span class="Apple-converted-space">                             </span>&lt;/div&gt;`;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>).join('');</p>
-<p class="p1"><span class="Apple-converted-space">                </span>card.innerHTML = `&lt;h3&gt;${team.name}&lt;/h3&gt;${playersHtml}`;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>teamDisplayDiv.appendChild(card);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>});</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/**</p>
-<p class="p1"><span class="Apple-converted-space">        </span>* Displays the matchup previews for Round 1.</p>
-<p class="p1"><span class="Apple-converted-space">        </span>*/</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function displayMatchupPreviews() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Match 1: Fuel vs Outlaws</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const team1_m1 = teams.Fuel;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const team2_m1 = teams.Outlaws;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (team1_m1?.assignedRoles &amp;&amp; team2_m1?.assignedRoles) {</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>matchupPreview1Div.innerHTML = `</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;h4&gt;Matchup Preview:&lt;/h4&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="sub-contest-preview"&gt;Fuel DPS (&lt;strong&gt;${team1_m1.assignedRoles.DPS.dpsProficiency}&lt;/strong&gt;) vs Outlaws Tank (&lt;strong&gt;${team2_m1.assignedRoles.Tank.tankProficiency}&lt;/strong&gt;)&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="sub-contest-preview"&gt;Fuel Tank (&lt;strong&gt;${team1_m1.assignedRoles.Tank.tankProficiency}&lt;/strong&gt;) vs Outlaws DPS (&lt;strong&gt;${team2_m1.assignedRoles.DPS.dpsProficiency}&lt;/strong&gt;)&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="sub-contest-preview"&gt;Fuel Support (&lt;strong&gt;${team1_m1.assignedRoles.Support.supportProficiency}&lt;/strong&gt;) vs Outlaws Support (&lt;strong&gt;${team2_m1.assignedRoles.Support.supportProficiency}&lt;/strong&gt;)&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>`;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>matchupPreview1Div.innerHTML = '&lt;h4&gt;Matchup Preview:&lt;/h4&gt;&lt;p class="text-gray-500"&gt;Team data missing.&lt;/p&gt;';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">             </span>// Match 2: Shock vs Dynasty</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const team1_m2 = teams.Shock;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const team2_m2 = teams.Dynasty;</p>
-<p class="p1"><span class="Apple-converted-space">             </span>if (team1_m2?.assignedRoles &amp;&amp; team2_m2?.assignedRoles) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>matchupPreview2Div.innerHTML = `</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;h4&gt;Matchup Preview:&lt;/h4&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="sub-contest-preview"&gt;Shock DPS (&lt;strong&gt;${team1_m2.assignedRoles.DPS.dpsProficiency}&lt;/strong&gt;) vs Dynasty Tank (&lt;strong&gt;${team2_m2.assignedRoles.Tank.tankProficiency}&lt;/strong&gt;)&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="sub-contest-preview"&gt;Shock Tank (&lt;strong&gt;${team1_m2.assignedRoles.Tank.tankProficiency}&lt;/strong&gt;) vs Dynasty DPS (&lt;strong&gt;${team2_m2.assignedRoles.DPS.dpsProficiency}&lt;/strong&gt;)&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="sub-contest-preview"&gt;Shock Support (&lt;strong&gt;${team1_m2.assignedRoles.Support.supportProficiency}&lt;/strong&gt;) vs Dynasty Support (&lt;strong&gt;${team2_m2.assignedRoles.Support.supportProficiency}&lt;/strong&gt;)&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>`;</p>
-<p class="p1"><span class="Apple-converted-space">             </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>matchupPreview2Div.innerHTML = '&lt;h4&gt;Matchup Preview:&lt;/h4&gt;&lt;p class="text-gray-500"&gt;Team data missing.&lt;/p&gt;';</p>
-<p class="p1"><span class="Apple-converted-space">             </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/**</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* Simulates a single sub-contest between two players based on specific proficiencies.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* @param {number} prof1 - Proficiency score of player 1 for the relevant role.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* @param {number} prof2 - Proficiency score of player 2 for the relevant role.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* @returns {boolean} True if player 1 wins, false otherwise.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>*/</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function simulateSubContest(prof1, prof2) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const totalProficiency = prof1 + prof2;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (totalProficiency === 0) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>return Math.random() &lt; 0.5; // 50/50 chance if both have 0 proficiency</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const chanceP1Wins = prof1 / totalProficiency;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const randomNum = Math.random();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>// console.log(`<span class="Apple-converted-space">  </span>Sub-contest: P1 Prof=${prof1}, P2 Prof=${prof2}, Chance P1 Wins=${chanceP1Wins.toFixed(3)}, Roll=${randomNum.toFixed(3)}, P1 Wins=${randomNum &lt;= chanceP1Wins}`);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return randomNum &lt;= chanceP1Wins;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/**</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* Simulates a single game between two teams using their pre-assigned roles.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* @param {object} team1 - The first team object (with assignedRoles).</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* @param {object} team2 - The second team object (with assignedRoles).</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* @returns {number} 1 if team 1 wins, 2 if team 2 wins.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>*/</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function simulateGame(team1, team2) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let team1SubWins = 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const roster1 = team1.assignedRoles;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const roster2 = team2.assignedRoles;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">             </span>if (!roster1 || !roster2) {</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>console.error("Cannot simulate game, missing assigned roles for:", team1.name, "or", team2.name);</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>return Math.random() &lt; 0.5 ? 1 : 2; // Failsafe random winner</p>
-<p class="p1"><span class="Apple-converted-space">             </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Sub-Contest 1: Team 1 DPS vs Team 2 Tank</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (simulateSubContest(roster1.DPS.dpsProficiency, roster2.Tank.tankProficiency)) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>team1SubWins++;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Sub-Contest 2: Team 1 Tank vs Team 2 DPS</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (simulateSubContest(roster1.Tank.tankProficiency, roster2.DPS.dpsProficiency)) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>team1SubWins++;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Sub-Contest 3: Team 1 Support vs Team 2 Support</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (simulateSubContest(roster1.Support.supportProficiency, roster2.Support.supportProficiency)) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>team1SubWins++;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// console.log(` Game Result: Team 1 Sub-Wins: ${team1SubWins}`);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return team1SubWins &gt;= 2 ? 1 : 2; // Team 1 wins if they win 2 or more sub-contests</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/**</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* Simulates a best-of-3 match between two teams using pre-assigned roles.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* @param {object} team1 - The first team object.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* @param {object} team2 - The second team object.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* @returns {object} { winner: teamObj, loser: teamObj, score: [wins1, wins2] }</p>
-<p class="p1"><span class="Apple-converted-space">         </span>*/</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function simulateMatch(team1, team2) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>console.log(`--- Simulating Match: ${team1.name} vs ${team2.name} ---`);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Roles are already assigned, no need to call assignRoles here</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let team1GamesWon = 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let team2GamesWon = 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let gameNumber = 1;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>while (team1GamesWon &lt; 2 &amp;&amp; team2GamesWon &lt; 2 &amp;&amp; gameNumber &lt;= 3) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>// console.log(` Starting Game ${gameNumber}`);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>const gameWinner = simulateGame(team1, team2); // Pass the whole team objects</p>
-<p class="p1"><span class="Apple-converted-space">                </span>if (gameWinner === 1) {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>team1GamesWon++;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>// console.log(` Game ${gameNumber} Winner: ${team1.name}`);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>team2GamesWon++;</p>
-<p class="p1"><span class="Apple-converted-space">                     </span>// console.log(` Game ${gameNumber} Winner: ${team2.name}`);</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">                </span>gameNumber++;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>const winner = team1GamesWon &gt; team2GamesWon ? team1 : team2;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const loser = winner === team1 ? team2 : team1;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const score = team1GamesWon &gt; team2GamesWon ? [team1GamesWon, team2GamesWon] : [team2GamesWon, team1GamesWon];</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>console.log(` Match Result: ${winner.name} defeats ${loser.name} (${score[0]}-${score[1]})`);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return { winner, loser, score };</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/**</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* Runs the full bracket simulation.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>*/</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function runFullSimulation() {</p>
-<p class="p1"><span class="Apple-converted-space">             </span>if (!teams.Fuel || !teams.Outlaws || !teams.Shock || !teams.Dynasty) {</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>alert("Teams not generated properly. Please regenerate teams.");</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>return false; // Indicate failure</p>
-<p class="p1"><span class="Apple-converted-space">             </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>// --- Match 1: Fuel vs Outlaws ---</p>
-<p class="p1"><span class="Apple-converted-space">            </span>simulationResults.match1 = simulateMatch(teams.Fuel, teams.Outlaws);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// --- Match 2: Shock vs Dynasty ---</p>
-<p class="p1"><span class="Apple-converted-space">            </span>simulationResults.match2 = simulateMatch(teams.Shock, teams.Dynasty);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// --- Match 3: Finals ---</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const finalist1 = simulationResults.match1.winner;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const finalist2 = simulationResults.match2.winner;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>simulationResults.match3 = simulateMatch(finalist1, finalist2);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>simulationResults.finalWinner = simulationResults.match3.winner;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">             </span>console.log(`\n=== Simulation Complete ===`);</p>
-<p class="p1"><span class="Apple-converted-space">             </span>console.log(`Match 1 Winner: ${simulationResults.match1.winner.name}`);</p>
-<p class="p1"><span class="Apple-converted-space">             </span>console.log(`Match 2 Winner: ${simulationResults.match2.winner.name}`);</p>
-<p class="p1"><span class="Apple-converted-space">             </span>console.log(`Finals Winner: ${simulationResults.finalWinner.name}`);</p>
-<p class="p1"><span class="Apple-converted-space">             </span>return true; // Indicate success</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>/**</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* Updates the results display and prediction accuracy in the UI.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>*/</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function displayResultsAndAccuracy() {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>resultsLogDiv.innerHTML = ''; // Clear previous results</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">             </span>if (!simulationResults.match1 || !simulationResults.match2 || !simulationResults.match3) {</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>resultsLogDiv.innerHTML = '&lt;p class="text-red-600 font-semibold"&gt;Simulation did not complete successfully. Please check console for errors or try regenerating teams.&lt;/p&gt;';</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">             </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Match 1 Results</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const m1 = simulationResults.match1;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const m1ResultP = document.createElement('p');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>m1ResultP.className = 'result-item';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>m1ResultP.innerHTML = `&lt;strong&gt;Match 1 (Fuel vs Outlaws):&lt;/strong&gt; ${m1.winner.name} defeats ${m1.loser.name} (${m1.score[0]}-${m1.score[1]})`;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>resultsLogDiv.appendChild(m1ResultP);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Match 2 Results</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const m2 = simulationResults.match2;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const m2ResultP = document.createElement('p');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>m2ResultP.className = 'result-item';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>m2ResultP.innerHTML = `&lt;strong&gt;Match 2 (Shock vs Dynasty):&lt;/strong&gt; ${m2.winner.name} defeats ${m2.loser.name} (${m2.score[0]}-${m2.score[1]})`;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>resultsLogDiv.appendChild(m2ResultP);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Match 3 Results</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const m3 = simulationResults.match3;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const m3ResultP = document.createElement('p');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>m3ResultP.className = 'result-item';</p>
-<p class="p1"><span class="Apple-converted-space">            </span>m3ResultP.innerHTML = `&lt;strong&gt;Match 3 (Finals - ${m3.winner.name} vs ${m3.loser.name}):&lt;/strong&gt; ${m3.winner.name} defeats ${m3.loser.name} (${m3.score[0]}-${m3.score[1]})`;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>resultsLogDiv.appendChild(m3ResultP);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">             </span>// Final Winner</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const finalWinnerP = document.createElement('p');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>finalWinnerP.className = 'result-item font-semibold text-lg bg-yellow-200'; // Highlight winner</p>
-<p class="p1"><span class="Apple-converted-space">            </span>finalWinnerP.innerHTML = `🏆 Tournament Winner: ${simulationResults.finalWinner.name} 🏆`;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>resultsLogDiv.appendChild(finalWinnerP);</p>
-<p class="p2"><br></p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Calculate and Display Accuracy</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let correctPredictions = 0;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>let accuracyHtml = '&lt;h4&gt;Prediction Accuracy:&lt;/h4&gt;';</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Match 1 Accuracy</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const predictedM1 = userPredictions.match1;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const actualM1 = m1.winner.name;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const m1Correct = predictedM1 === actualM1;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (m1Correct) correctPredictions++;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>accuracyHtml += `&lt;p&gt;Match 1 (Fuel vs Outlaws): You predicted &lt;strong&gt;${predictedM1 || 'N/A'}&lt;/strong&gt;. Actual winner: &lt;strong&gt;${actualM1}&lt;/strong&gt;. &lt;span class="${m1Correct ? 'correct-prediction' : 'incorrect-prediction'}"&gt;${m1Correct ? 'Correct!' : 'Incorrect.'}&lt;/span&gt;&lt;/p&gt;`;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Match 2 Accuracy</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const predictedM2 = userPredictions.match2;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const actualM2 = m2.winner.name;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const m2Correct = predictedM2 === actualM2;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (m2Correct) correctPredictions++;</p>
-<p class="p1"><span class="Apple-converted-space">             </span>accuracyHtml += `&lt;p&gt;Match 2 (Shock vs Dynasty): You predicted &lt;strong&gt;${predictedM2 || 'N/A'}&lt;/strong&gt;. Actual winner: &lt;strong&gt;${actualM2}&lt;/strong&gt;. &lt;span class="${m2Correct ? 'correct-prediction' : 'incorrect-prediction'}"&gt;${m2Correct ? 'Correct!' : 'Incorrect.'}&lt;/span&gt;&lt;/p&gt;`;</p>
-<p class="p2"><br></p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Match 3 Accuracy</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const predictedM3 = userPredictions.match3;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const actualM3 = m3.winner.name;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const m3Correct = predictedM3 === actualM3;</p>
-<p class="p1"><span class="Apple-converted-space">             </span>if (m3Correct) correctPredictions++;</p>
-<p class="p1"><span class="Apple-converted-space">             </span>accuracyHtml += `&lt;p&gt;Match 3 (Finals): You predicted &lt;strong&gt;${predictedM3 || 'N/A'}&lt;/strong&gt;. Actual winner: &lt;strong&gt;${actualM3}&lt;/strong&gt;. &lt;span class="${m3Correct ? 'correct-prediction' : 'incorrect-prediction'}"&gt;${m3Correct ? 'Correct!' : 'Incorrect.'}&lt;/span&gt;&lt;/p&gt;`;</p>
-<p class="p2"><br></p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>accuracyHtml += `&lt;p class="mt-2 font-bold"&gt;Total Correct Predictions: ${correctPredictions} out of 3&lt;/p&gt;`;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>accuracyDisplayDiv.innerHTML = accuracyHtml;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Update Bracket Visualization</p>
-<p class="p1"><span class="Apple-converted-space">            </span>updateBracketVisualization();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">         </span>/**</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* Updates the bracket UI with simulation results.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>*/</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function updateBracketVisualization() {</p>
-<p class="p1"><span class="Apple-converted-space">             </span>if (!simulationResults.match1 || !simulationResults.match2 || !simulationResults.match3) return; // Don't update if sim failed</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Match 1</p>
-<p class="p1"><span class="Apple-converted-space">            </span>bracketM1Winner.textContent = `Winner: ${simulationResults.match1.winner.name}`;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Match 2</p>
-<p class="p1"><span class="Apple-converted-space">            </span>bracketM2Winner.textContent = `Winner: ${simulationResults.match2.winner.name}`;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Finals Matchup</p>
-<p class="p1"><span class="Apple-converted-space">            </span>bracketM3T1.textContent = simulationResults.match1.winner.name;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>bracketM3T2.textContent = simulationResults.match2.winner.name;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>bracketM3Winner.textContent = `Winner: ${simulationResults.match3.winner.name}`;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Final Winner</p>
-<p class="p1"><span class="Apple-converted-space">            </span>bracketFinalWinner.textContent = simulationResults.finalWinner.name;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">         </span>/**</p>
-<p class="p1"><span class="Apple-converted-space">         </span>* Clears the results and bracket visualization.</p>
-<p class="p1"><span class="Apple-converted-space">         </span>*/</p>
-<p class="p1"><span class="Apple-converted-space">        </span>function clearResultsDisplay() {</p>
-<p class="p1"><span class="Apple-converted-space">             </span>resultsLogDiv.innerHTML = '&lt;p class="text-gray-500"&gt;Make predictions and click "Simulate Bracket" to see the results.&lt;/p&gt;';</p>
-<p class="p1"><span class="Apple-converted-space">             </span>accuracyDisplayDiv.innerHTML = '';</p>
-<p class="p1"><span class="Apple-converted-space">             </span>bracketM1Winner.textContent = '';</p>
-<p class="p1"><span class="Apple-converted-space">             </span>bracketM2Winner.textContent = '';</p>
-<p class="p1"><span class="Apple-converted-space">             </span>bracketM3T1.textContent = '?';</p>
-<p class="p1"><span class="Apple-converted-space">             </span>bracketM3T2.textContent = '?';</p>
-<p class="p1"><span class="Apple-converted-space">             </span>bracketM3Winner.textContent = '';</p>
-<p class="p1"><span class="Apple-converted-space">             </span>bracketFinalWinner.textContent = '';</p>
-<p class="p1"><span class="Apple-converted-space">             </span>simulationResults = { match1: null, match2: null, match3: null, finalWinner: null }; // Reset results object</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// --- Event Listeners ---</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.addEventListener('DOMContentLoaded', () =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>generateAllTeamsAndRoles(); // Generate teams and assign roles on load</p>
-<p class="p1"><span class="Apple-converted-space">            </span>displayTeams();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>displayMatchupPreviews(); // Show previews immediately</p>
-<p class="p1"><span class="Apple-converted-space">            </span>clearResultsDisplay(); // Ensure results area is initially clear</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>simulateButton.addEventListener('click', () =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Get user predictions</p>
-<p class="p1"><span class="Apple-converted-space">            </span>userPredictions.match1 = predictMatch1Select.value;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>userPredictions.match2 = predictMatch2Select.value;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>userPredictions.match3 = predictMatch3Select.value;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">             </span>// Basic validation</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (!userPredictions.match1 || !userPredictions.match2 || !userPredictions.match3) {</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>alert("Please make a prediction for all three matches before simulating.");</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">             </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>console.log("User Predictions:", userPredictions);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Run simulation</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const simulationSuccess = runFullSimulation();</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Display results only if simulation ran successfully</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (simulationSuccess) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>displayResultsAndAccuracy();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">         </span>regenerateButton.addEventListener('click', () =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>console.log("Regenerating teams and roles...");</p>
-<p class="p1"><span class="Apple-converted-space">            </span>generateAllTeamsAndRoles(); // Regenerate teams and assign new roles</p>
-<p class="p1"><span class="Apple-converted-space">            </span>displayTeams(); // Update team display</p>
-<p class="p1"><span class="Apple-converted-space">            </span>displayMatchupPreviews(); // Update matchup previews</p>
-<p class="p1"><span class="Apple-converted-space">            </span>clearResultsDisplay(); // Clear old results and bracket</p>
-<p class="p1"><span class="Apple-converted-space">            </span>// Reset prediction dropdowns</p>
-<p class="p1"><span class="Apple-converted-space">            </span>predictMatch1Select.value = "";</p>
-<p class="p1"><span class="Apple-converted-space">            </span>predictMatch2Select.value = "";</p>
-<p class="p1"><span class="Apple-converted-space">            </span>predictMatch3Select.value = "";</p>
-<p class="p1"><span class="Apple-converted-space">            </span>userPredictions = { match1: null, match2: null, match3: null };</p>
-<p class="p1"><span class="Apple-converted-space">             </span>alert("Teams and roles have been regenerated. Please make new predictions.");</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
-<p class="p1">&lt;/body&gt;</p>
-<p class="p1">&lt;/html&gt;</p>
+<body class="p-6 md:p-10">
+    <h1 class="text-3xl font-bold mb-6 text-center text-gray-900">UnderAssault Bracket Simulator</h1>
+
+    <section id="team-display" class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4 text-gray-800">Generated Teams & Players (Roles Assigned)</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            </div>
+    </section>
+
+    <section id="prediction-section" class="card prediction-section mb-8">
+        <h3>Make Your Predictions</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <label for="predict-match1" class="block font-medium text-gray-700">Match 1: Fuel vs Outlaws</label>
+                <select id="predict-match1" name="predict-match1">
+                    <option value="">-- Select Winner --</option>
+                    <option value="Fuel">Fuel</option>
+                    <option value="Outlaws">Outlaws</option>
+                </select>
+                <div id="matchup-preview-1" class="matchup-preview">
+                    <h4>Matchup Preview:</h4>
+                    <p class="text-gray-500">Generating preview...</p>
+                </div>
+            </div>
+            <div>
+                <label for="predict-match2" class="block font-medium text-gray-700">Match 2: Shock vs Dynasty</label>
+                <select id="predict-match2" name="predict-match2">
+                    <option value="">-- Select Winner --</option>
+                    <option value="Shock">Shock</option>
+                    <option value="Dynasty">Dynasty</option>
+                </select>
+                 <div id="matchup-preview-2" class="matchup-preview">
+                     <h4>Matchup Preview:</h4>
+                     <p class="text-gray-500">Generating preview...</p>
+                 </div>
+            </div>
+            <div>
+                <label for="predict-match3" class="block font-medium text-gray-700">Match 3: Finals</label>
+                <select id="predict-match3" name="predict-match3">
+                    <option value="">-- Select Winner --</option>
+                    <option value="Fuel">Fuel</option>
+                    <option value="Outlaws">Outlaws</option>
+                     <option value="Shock">Shock</option>
+                    <option value="Dynasty">Dynasty</option>
+                </select>
+                 <div class="matchup-preview border-dashed border-gray-400 bg-gray-100">
+                     <h4 class="text-gray-600">Matchup Preview:</h4>
+                     <p class="text-gray-500">Finals matchup depends on Round 1 results.</p>
+                 </div>
+            </div>
+        </div>
+         <button id="simulate-button" class="mt-6">Simulate Bracket</button> <button id="regenerate-teams-button" class="mt-6 ml-2 bg-gray-500 hover:bg-gray-600">Regenerate Teams & Roles</button>
+    </section>
+
+    <section id="bracket-visualization" class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4 text-gray-800">Tournament Bracket</h2>
+        <div class="bracket">
+            <div class="round">
+                <div id="bracket-m1" class="match">
+                    <div>Fuel</div>
+                    <div>vs</div>
+                    <div>Outlaws</div>
+                    <div id="bracket-m1-winner" class="match-winner"></div>
+                </div>
+                <div id="bracket-m2" class="match">
+                    <div>Shock</div>
+                    <div>vs</div>
+                    <div>Dynasty</div>
+                     <div id="bracket-m2-winner" class="match-winner"></div>
+                </div>
+            </div>
+            <div class="round">
+                 <div id="bracket-m3" class="match" style="margin-top: calc(50% - 40px);"> <div id="bracket-m3-t1">?</div>
+                    <div>vs</div>
+                    <div id="bracket-m3-t2">?</div>
+                    <div id="bracket-m3-winner" class="match-winner"></div>
+                </div>
+            </div>
+            <div class="round">
+                 <div id="bracket-winner" class="match" style="margin-top: calc(50% - 40px); background-color: #facc15;"> <div>🏆 Winner 🏆</div>
+                     <div id="bracket-final-winner" class="match-winner" style="font-size: 1rem;"></div>
+                 </div>
+            </div>
+            <div class="line-r1-m1-to-finals connector"></div>
+            <div class="line-r1-m2-to-finals connector"></div>
+            <div class="line-finals-connector connector"></div>
+            <div class="line-finals-to-winner connector"></div>
+        </div>
+    </section>
+
+    <section id="results-section" class="card results-section">
+        <h3>Simulation Results</h3>
+        <div id="results-log">
+            <p class="text-gray-500">Make predictions and click "Simulate Bracket" to see the results.</p>
+        </div>
+        <div id="accuracy-display" class="accuracy-display"></div>
+    </section>
+
+    <script>
+        // --- Global Variables ---
+        const teamNames = ["Fuel", "Outlaws", "Shock", "Dynasty"];
+        const roles = ["DPS", "Tank", "Support"];
+        let teams = {}; // { teamName: { name: "TeamName", players: [playerObj...], assignedRoles: { DPS: player, Tank: player, Support: player } } }
+        let simulationResults = {
+            match1: null, // { winner: teamObj, loser: teamObj, score: [w, l] }
+            match2: null,
+            match3: null,
+            finalWinner: null
+        };
+        let userPredictions = {
+            match1: null,
+            match2: null,
+            match3: null
+        };
+
+        // --- DOM Elements ---
+        const teamDisplayDiv = document.getElementById('team-display').querySelector('.grid');
+        const predictMatch1Select = document.getElementById('predict-match1');
+        const predictMatch2Select = document.getElementById('predict-match2');
+        const predictMatch3Select = document.getElementById('predict-match3');
+        const matchupPreview1Div = document.getElementById('matchup-preview-1');
+        const matchupPreview2Div = document.getElementById('matchup-preview-2');
+        const simulateButton = document.getElementById('simulate-button');
+        const regenerateButton = document.getElementById('regenerate-teams-button');
+        const resultsLogDiv = document.getElementById('results-log');
+        const accuracyDisplayDiv = document.getElementById('accuracy-display');
+        const bracketM1Winner = document.getElementById('bracket-m1-winner');
+        const bracketM2Winner = document.getElementById('bracket-m2-winner');
+        const bracketM3T1 = document.getElementById('bracket-m3-t1');
+        const bracketM3T2 = document.getElementById('bracket-m3-t2');
+        const bracketM3Winner = document.getElementById('bracket-m3-winner');
+        const bracketFinalWinner = document.getElementById('bracket-final-winner');
+
+
+        // --- Core Logic ---
+
+        /**
+         * Generates a random integer between 0 and 100 (inclusive).
+         * @returns {number} A random proficiency score.
+         */
+        function generateRandomProficiency() {
+            return Math.floor(Math.random() * 101);
+        }
+
+        /**
+         * Creates a player object with random proficiencies for each role.
+         * @param {number} id - A unique identifier for the player within the team.
+         * @returns {object} Player object with id, dps, tank, and support proficiencies.
+         */
+        function createPlayer(id) {
+            return {
+                id: id,
+                dpsProficiency: generateRandomProficiency(),
+                tankProficiency: generateRandomProficiency(),
+                supportProficiency: generateRandomProficiency()
+            };
+        }
+
+        /**
+        * Shuffles array in place using Fisher-Yates algorithm.
+        * @param {Array} array Array containing items.
+        */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        /**
+         * Assigns roles randomly ONCE to the players of a team.
+         * @param {object} team - The team object (will be modified).
+         */
+        function assignRolesToTeam(team) {
+            const playersCopy = [...team.players]; // Create a copy to shuffle
+            shuffleArray(playersCopy); // Randomize player order
+            team.assignedRoles = {}; // Store assigned roles directly on the team object
+            team.assignedRoles[roles[0]] = playersCopy[0]; // Assign first shuffled player to DPS
+            team.assignedRoles[roles[1]] = playersCopy[1]; // Assign second to Tank
+            team.assignedRoles[roles[2]] = playersCopy[2]; // Assign third to Support
+            console.log(`Assigned roles for ${team.name}:`, team.assignedRoles);
+        }
+
+
+        /**
+         * Generates a team with a given name and 3 players, and assigns roles.
+         * @param {string} name - The name of the team.
+         * @returns {object} Team object containing name, players array, and assignedRoles object.
+         */
+        function generateTeam(name) {
+            const players = [createPlayer(1), createPlayer(2), createPlayer(3)];
+            const team = { name: name, players: players, assignedRoles: null };
+            assignRolesToTeam(team); // Assign roles immediately
+            return team;
+        }
+
+        /**
+         * Generates all four teams and assigns roles.
+         */
+        function generateAllTeamsAndRoles() {
+            teams = {}; // Reset teams
+            teamNames.forEach(name => {
+                teams[name] = generateTeam(name); // generateTeam now assigns roles
+            });
+            console.log("Generated Teams with Roles:", JSON.parse(JSON.stringify(teams))); // Log deep copy
+             // Update prediction dropdowns for Match 3 (Finals) - still needed
+            updateFinalsPredictionDropdown();
+        }
+
+         /**
+         * Updates the options in the Finals prediction dropdown.
+         */
+        function updateFinalsPredictionDropdown() {
+            predictMatch3Select.innerHTML = '<option value="">-- Select Winner --</option>'; // Clear existing options
+            teamNames.forEach(name => {
+                 const option = document.createElement('option');
+                 option.value = name;
+                 option.textContent = name;
+                 predictMatch3Select.appendChild(option);
+            });
+        }
+
+        /**
+         * Displays the generated teams, their players, and assigned roles in the UI.
+         */
+        function displayTeams() {
+            teamDisplayDiv.innerHTML = ''; // Clear previous display
+            teamNames.forEach(name => {
+                const team = teams[name];
+                if (!team || !team.players || !team.assignedRoles) {
+                    console.error("Team data incomplete for display:", name, team);
+                    return; // Skip incomplete teams
+                }
+                const card = document.createElement('div');
+                card.className = 'card team-card';
+
+                // Find role for each player
+                const playerRoles = {};
+                 Object.entries(team.assignedRoles).forEach(([role, player]) => {
+                     playerRoles[player.id] = role;
+                 });
+
+                let playersHtml = team.players.map(p => {
+                    const assignedRole = playerRoles[p.id] || 'N/A'; // Find the role assigned to this player
+                    return `<div class="player-info">
+                                <strong>Player ${p.id} (<span class="role">${assignedRole}</span>):</strong>
+                                DPS: ${p.dpsProficiency}, Tank: ${p.tankProficiency}, Support: ${p.supportProficiency}
+                             </div>`;
+                    }
+                ).join('');
+                card.innerHTML = `<h3>${team.name}</h3>${playersHtml}`;
+                teamDisplayDiv.appendChild(card);
+            });
+        }
+
+        /**
+        * Displays the matchup previews for Round 1.
+        */
+        function displayMatchupPreviews() {
+            // Match 1: Fuel vs Outlaws
+            const team1_m1 = teams.Fuel;
+            const team2_m1 = teams.Outlaws;
+            if (team1_m1?.assignedRoles && team2_m1?.assignedRoles) {
+                 matchupPreview1Div.innerHTML = `
+                    <h4>Matchup Preview:</h4>
+                    <div class="sub-contest-preview">Fuel DPS (<strong>${team1_m1.assignedRoles.DPS.dpsProficiency}</strong>) vs Outlaws Tank (<strong>${team2_m1.assignedRoles.Tank.tankProficiency}</strong>)</div>
+                    <div class="sub-contest-preview">Fuel Tank (<strong>${team1_m1.assignedRoles.Tank.tankProficiency}</strong>) vs Outlaws DPS (<strong>${team2_m1.assignedRoles.DPS.dpsProficiency}</strong>)</div>
+                    <div class="sub-contest-preview">Fuel Support (<strong>${team1_m1.assignedRoles.Support.supportProficiency}</strong>) vs Outlaws Support (<strong>${team2_m1.assignedRoles.Support.supportProficiency}</strong>)</div>
+                 `;
+            } else {
+                 matchupPreview1Div.innerHTML = '<h4>Matchup Preview:</h4><p class="text-gray-500">Team data missing.</p>';
+            }
+
+             // Match 2: Shock vs Dynasty
+            const team1_m2 = teams.Shock;
+            const team2_m2 = teams.Dynasty;
+             if (team1_m2?.assignedRoles && team2_m2?.assignedRoles) {
+                matchupPreview2Div.innerHTML = `
+                    <h4>Matchup Preview:</h4>
+                    <div class="sub-contest-preview">Shock DPS (<strong>${team1_m2.assignedRoles.DPS.dpsProficiency}</strong>) vs Dynasty Tank (<strong>${team2_m2.assignedRoles.Tank.tankProficiency}</strong>)</div>
+                    <div class="sub-contest-preview">Shock Tank (<strong>${team1_m2.assignedRoles.Tank.tankProficiency}</strong>) vs Dynasty DPS (<strong>${team2_m2.assignedRoles.DPS.dpsProficiency}</strong>)</div>
+                    <div class="sub-contest-preview">Shock Support (<strong>${team1_m2.assignedRoles.Support.supportProficiency}</strong>) vs Dynasty Support (<strong>${team2_m2.assignedRoles.Support.supportProficiency}</strong>)</div>
+                `;
+             } else {
+                 matchupPreview2Div.innerHTML = '<h4>Matchup Preview:</h4><p class="text-gray-500">Team data missing.</p>';
+             }
+        }
+
+
+        /**
+         * Simulates a single sub-contest between two players based on specific proficiencies.
+         * @param {number} prof1 - Proficiency score of player 1 for the relevant role.
+         * @param {number} prof2 - Proficiency score of player 2 for the relevant role.
+         * @returns {boolean} True if player 1 wins, false otherwise.
+         */
+        function simulateSubContest(prof1, prof2) {
+            const totalProficiency = prof1 + prof2;
+            if (totalProficiency === 0) {
+                return Math.random() < 0.5; // 50/50 chance if both have 0 proficiency
+            }
+            const chanceP1Wins = prof1 / totalProficiency;
+            const randomNum = Math.random();
+            // console.log(`  Sub-contest: P1 Prof=${prof1}, P2 Prof=${prof2}, Chance P1 Wins=${chanceP1Wins.toFixed(3)}, Roll=${randomNum.toFixed(3)}, P1 Wins=${randomNum <= chanceP1Wins}`);
+            return randomNum <= chanceP1Wins;
+        }
+
+        /**
+         * Simulates a single game between two teams using their pre-assigned roles.
+         * @param {object} team1 - The first team object (with assignedRoles).
+         * @param {object} team2 - The second team object (with assignedRoles).
+         * @returns {number} 1 if team 1 wins, 2 if team 2 wins.
+         */
+        function simulateGame(team1, team2) {
+            let team1SubWins = 0;
+            const roster1 = team1.assignedRoles;
+            const roster2 = team2.assignedRoles;
+
+             if (!roster1 || !roster2) {
+                 console.error("Cannot simulate game, missing assigned roles for:", team1.name, "or", team2.name);
+                 return Math.random() < 0.5 ? 1 : 2; // Failsafe random winner
+             }
+
+            // Sub-Contest 1: Team 1 DPS vs Team 2 Tank
+            if (simulateSubContest(roster1.DPS.dpsProficiency, roster2.Tank.tankProficiency)) {
+                team1SubWins++;
+            }
+            // Sub-Contest 2: Team 1 Tank vs Team 2 DPS
+            if (simulateSubContest(roster1.Tank.tankProficiency, roster2.DPS.dpsProficiency)) {
+                team1SubWins++;
+            }
+            // Sub-Contest 3: Team 1 Support vs Team 2 Support
+            if (simulateSubContest(roster1.Support.supportProficiency, roster2.Support.supportProficiency)) {
+                team1SubWins++;
+            }
+
+            // console.log(` Game Result: Team 1 Sub-Wins: ${team1SubWins}`);
+            return team1SubWins >= 2 ? 1 : 2; // Team 1 wins if they win 2 or more sub-contests
+        }
+
+        /**
+         * Simulates a best-of-3 match between two teams using pre-assigned roles.
+         * @param {object} team1 - The first team object.
+         * @param {object} team2 - The second team object.
+         * @returns {object} { winner: teamObj, loser: teamObj, score: [wins1, wins2] }
+         */
+        function simulateMatch(team1, team2) {
+            console.log(`--- Simulating Match: ${team1.name} vs ${team2.name} ---`);
+            // Roles are already assigned, no need to call assignRoles here
+            let team1GamesWon = 0;
+            let team2GamesWon = 0;
+            let gameNumber = 1;
+
+            while (team1GamesWon < 2 && team2GamesWon < 2 && gameNumber <= 3) {
+                // console.log(` Starting Game ${gameNumber}`);
+                const gameWinner = simulateGame(team1, team2); // Pass the whole team objects
+                if (gameWinner === 1) {
+                    team1GamesWon++;
+                    // console.log(` Game ${gameNumber} Winner: ${team1.name}`);
+                } else {
+                    team2GamesWon++;
+                     // console.log(` Game ${gameNumber} Winner: ${team2.name}`);
+                }
+                gameNumber++;
+            }
+
+            const winner = team1GamesWon > team2GamesWon ? team1 : team2;
+            const loser = winner === team1 ? team2 : team1;
+            const score = team1GamesWon > team2GamesWon ? [team1GamesWon, team2GamesWon] : [team2GamesWon, team1GamesWon];
+
+            console.log(` Match Result: ${winner.name} defeats ${loser.name} (${score[0]}-${score[1]})`);
+            return { winner, loser, score };
+        }
+
+        /**
+         * Runs the full bracket simulation.
+         */
+        function runFullSimulation() {
+             if (!teams.Fuel || !teams.Outlaws || !teams.Shock || !teams.Dynasty) {
+                 alert("Teams not generated properly. Please regenerate teams.");
+                 return false; // Indicate failure
+             }
+            // --- Match 1: Fuel vs Outlaws ---
+            simulationResults.match1 = simulateMatch(teams.Fuel, teams.Outlaws);
+
+            // --- Match 2: Shock vs Dynasty ---
+            simulationResults.match2 = simulateMatch(teams.Shock, teams.Dynasty);
+
+            // --- Match 3: Finals ---
+            const finalist1 = simulationResults.match1.winner;
+            const finalist2 = simulationResults.match2.winner;
+            simulationResults.match3 = simulateMatch(finalist1, finalist2);
+            simulationResults.finalWinner = simulationResults.match3.winner;
+
+             console.log(`\n=== Simulation Complete ===`);
+             console.log(`Match 1 Winner: ${simulationResults.match1.winner.name}`);
+             console.log(`Match 2 Winner: ${simulationResults.match2.winner.name}`);
+             console.log(`Finals Winner: ${simulationResults.finalWinner.name}`);
+             return true; // Indicate success
+        }
+
+        /**
+         * Updates the results display and prediction accuracy in the UI.
+         */
+        function displayResultsAndAccuracy() {
+            resultsLogDiv.innerHTML = ''; // Clear previous results
+
+             if (!simulationResults.match1 || !simulationResults.match2 || !simulationResults.match3) {
+                 resultsLogDiv.innerHTML = '<p class="text-red-600 font-semibold">Simulation did not complete successfully. Please check console for errors or try regenerating teams.</p>';
+                 return;
+             }
+
+            // Match 1 Results
+            const m1 = simulationResults.match1;
+            const m1ResultP = document.createElement('p');
+            m1ResultP.className = 'result-item';
+            m1ResultP.innerHTML = `<strong>Match 1 (Fuel vs Outlaws):</strong> ${m1.winner.name} defeats ${m1.loser.name} (${m1.score[0]}-${m1.score[1]})`;
+            resultsLogDiv.appendChild(m1ResultP);
+
+            // Match 2 Results
+            const m2 = simulationResults.match2;
+            const m2ResultP = document.createElement('p');
+            m2ResultP.className = 'result-item';
+            m2ResultP.innerHTML = `<strong>Match 2 (Shock vs Dynasty):</strong> ${m2.winner.name} defeats ${m2.loser.name} (${m2.score[0]}-${m2.score[1]})`;
+            resultsLogDiv.appendChild(m2ResultP);
+
+            // Match 3 Results
+            const m3 = simulationResults.match3;
+            const m3ResultP = document.createElement('p');
+            m3ResultP.className = 'result-item';
+            m3ResultP.innerHTML = `<strong>Match 3 (Finals - ${m3.winner.name} vs ${m3.loser.name}):</strong> ${m3.winner.name} defeats ${m3.loser.name} (${m3.score[0]}-${m3.score[1]})`;
+            resultsLogDiv.appendChild(m3ResultP);
+
+             // Final Winner
+            const finalWinnerP = document.createElement('p');
+            finalWinnerP.className = 'result-item font-semibold text-lg bg-yellow-200'; // Highlight winner
+            finalWinnerP.innerHTML = `🏆 Tournament Winner: ${simulationResults.finalWinner.name} 🏆`;
+            resultsLogDiv.appendChild(finalWinnerP);
+
+
+            // Calculate and Display Accuracy
+            let correctPredictions = 0;
+            let accuracyHtml = '<h4>Prediction Accuracy:</h4>';
+
+            // Match 1 Accuracy
+            const predictedM1 = userPredictions.match1;
+            const actualM1 = m1.winner.name;
+            const m1Correct = predictedM1 === actualM1;
+            if (m1Correct) correctPredictions++;
+            accuracyHtml += `<p>Match 1 (Fuel vs Outlaws): You predicted <strong>${predictedM1 || 'N/A'}</strong>. Actual winner: <strong>${actualM1}</strong>. <span class="${m1Correct ? 'correct-prediction' : 'incorrect-prediction'}">${m1Correct ? 'Correct!' : 'Incorrect.'}</span></p>`;
+
+            // Match 2 Accuracy
+            const predictedM2 = userPredictions.match2;
+            const actualM2 = m2.winner.name;
+            const m2Correct = predictedM2 === actualM2;
+            if (m2Correct) correctPredictions++;
+             accuracyHtml += `<p>Match 2 (Shock vs Dynasty): You predicted <strong>${predictedM2 || 'N/A'}</strong>. Actual winner: <strong>${actualM2}</strong>. <span class="${m2Correct ? 'correct-prediction' : 'incorrect-prediction'}">${m2Correct ? 'Correct!' : 'Incorrect.'}</span></p>`;
+
+
+            // Match 3 Accuracy
+            const predictedM3 = userPredictions.match3;
+            const actualM3 = m3.winner.name;
+            const m3Correct = predictedM3 === actualM3;
+             if (m3Correct) correctPredictions++;
+             accuracyHtml += `<p>Match 3 (Finals): You predicted <strong>${predictedM3 || 'N/A'}</strong>. Actual winner: <strong>${actualM3}</strong>. <span class="${m3Correct ? 'correct-prediction' : 'incorrect-prediction'}">${m3Correct ? 'Correct!' : 'Incorrect.'}</span></p>`;
+
+
+            accuracyHtml += `<p class="mt-2 font-bold">Total Correct Predictions: ${correctPredictions} out of 3</p>`;
+            accuracyDisplayDiv.innerHTML = accuracyHtml;
+
+            // Update Bracket Visualization
+            updateBracketVisualization();
+        }
+
+         /**
+         * Updates the bracket UI with simulation results.
+         */
+        function updateBracketVisualization() {
+             if (!simulationResults.match1 || !simulationResults.match2 || !simulationResults.match3) return; // Don't update if sim failed
+
+            // Match 1
+            bracketM1Winner.textContent = `Winner: ${simulationResults.match1.winner.name}`;
+
+            // Match 2
+            bracketM2Winner.textContent = `Winner: ${simulationResults.match2.winner.name}`;
+
+            // Finals Matchup
+            bracketM3T1.textContent = simulationResults.match1.winner.name;
+            bracketM3T2.textContent = simulationResults.match2.winner.name;
+            bracketM3Winner.textContent = `Winner: ${simulationResults.match3.winner.name}`;
+
+            // Final Winner
+            bracketFinalWinner.textContent = simulationResults.finalWinner.name;
+        }
+
+         /**
+         * Clears the results and bracket visualization.
+         */
+        function clearResultsDisplay() {
+             resultsLogDiv.innerHTML = '<p class="text-gray-500">Make predictions and click "Simulate Bracket" to see the results.</p>';
+             accuracyDisplayDiv.innerHTML = '';
+             bracketM1Winner.textContent = '';
+             bracketM2Winner.textContent = '';
+             bracketM3T1.textContent = '?';
+             bracketM3T2.textContent = '?';
+             bracketM3Winner.textContent = '';
+             bracketFinalWinner.textContent = '';
+             simulationResults = { match1: null, match2: null, match3: null, finalWinner: null }; // Reset results object
+        }
+
+
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            generateAllTeamsAndRoles(); // Generate teams and assign roles on load
+            displayTeams();
+            displayMatchupPreviews(); // Show previews immediately
+            clearResultsDisplay(); // Ensure results area is initially clear
+        });
+
+        simulateButton.addEventListener('click', () => {
+            // Get user predictions
+            userPredictions.match1 = predictMatch1Select.value;
+            userPredictions.match2 = predictMatch2Select.value;
+            userPredictions.match3 = predictMatch3Select.value;
+
+             // Basic validation
+            if (!userPredictions.match1 || !userPredictions.match2 || !userPredictions.match3) {
+                 alert("Please make a prediction for all three matches before simulating.");
+                 return;
+             }
+
+            console.log("User Predictions:", userPredictions);
+
+            // Run simulation
+            const simulationSuccess = runFullSimulation();
+
+            // Display results only if simulation ran successfully
+            if (simulationSuccess) {
+                displayResultsAndAccuracy();
+            }
+        });
+
+         regenerateButton.addEventListener('click', () => {
+            console.log("Regenerating teams and roles...");
+            generateAllTeamsAndRoles(); // Regenerate teams and assign new roles
+            displayTeams(); // Update team display
+            displayMatchupPreviews(); // Update matchup previews
+            clearResultsDisplay(); // Clear old results and bracket
+            // Reset prediction dropdowns
+            predictMatch1Select.value = "";
+            predictMatch2Select.value = "";
+            predictMatch3Select.value = "";
+            userPredictions = { match1: null, match2: null, match3: null };
+             alert("Teams and roles have been regenerated. Please make new predictions.");
+        });
+
+    </script>
 </body>
 </html>
