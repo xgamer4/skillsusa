@@ -1,0 +1,28 @@
+# Predicting Firestorm's UnderAssualt
+
+* Author: Nicole Prosser
+
+## Overview
+
+This program allows users to run various simulations of possible outcomes of the Firestorm UnderAssualt competition
+
+## Compiling and Using
+
+To compile and run, hit the arrow in the top right corner of vs code.
+
+The user will be prompted to input a single letter command, representing the simulation the user wants the program to run. A menu with further instructions should appear to guide the user.
+
+Depending on the chosen simulation, the user will be prompted to input the names of the teams they want to run the simmulation with.
+
+## Discussion
+
+Overall the project went rather smoothly. The hardest part was determining how to organize information, what should be its own objects, etc. I also had to remind myself on using the .equals function to compare strings instead of ==, but once I fixed that bug, everything ran pretty smoothly the only other issue that I faced was VS code throwing runtime errors at me for no apparent reason and having to switch devices twice. I really enjoyed this project, as it required a lot of planning and thought, but not overly complex code.
+
+
+## Testing
+
+For testing, I ran through the all the possible simulations, multiple times with mutliple different inputs ensuring all of them worked. If a bug occured, I would fix it and rerun the tests to ensure it had been fixed properly
+
+## Sources used
+ - Various reminders of code syntax including the .equals function
+ - [Syntax](https://stackoverflow.com/questions)
