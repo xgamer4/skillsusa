@@ -1,0 +1,97 @@
+    /**
+     * determines which members on the team should be assigned to which role
+     * @param players the players being evaluated
+     * uses the Hungarian Algorithm as inspiration
+     */
+    private void determineTeamRoles(Player[] players){
+        double[][] duplicateMatrix = new double[3][3];
+        //duplicate players for a 'cost' matrix
+        for(int i = 0; i < 3; i++){
+            duplicateMatrix[i][0] = players[i].getTankProficiency();
+            duplicateMatrix[i][1] = players[i].getDPSProficiency();
+            duplicateMatrix[i][2] = players[i].getSupportProficiency();
+        }
+
+        //subtract largest from each row, across the row, instead of Hungarian smallest, because we want to maximize values
+        for(int i = 0; i < 3; i++){
+            double largestProf = Integer.MIN_VALUE;
+            //get largest val in the row
+            for(int j = 0; j < 3; j++){
+                if(duplicateMatrix[i][j] > largestProf)
+                    largestProf = duplicateMatrix[i][j];
+            }
+
+            //sutract from the entire row
+            for(int j = 0; j < 3; j++){
+                duplicateMatrix[i][j] -= largestProf;
+            }
+        }
+
+        //subtract newest largest from each column, across the column, again to maximize team values
+        for(int i = 0; i < 3; i++){
+            double largestProf = Integer.MIN_VALUE;
+            //get largest val in the column
+            for(int j = 0; j < 3; j++){
+                if(duplicateMatrix[j][i] < largestProf)
+                    largestProf = duplicateMatrix[j][i];
+            }
+
+            //sutract from the entire column
+            for(int j = 0; j < 3; j++){
+                duplicateMatrix[j][i] -= largestProf;
+            }
+        }
+
+        //find the zeros in the matrix
+        //if their is a zero that player will fill the role according to the index
+        //if their is already a player filling that role they will ignore it
+        //every player should have at least 1 zero
+        for(int i = 0; i < 3; i++){
+            boolean tank = false;
+            boolean dps = false;
+            boolean support = false;
+            for(int j = 0; j < 3; j++){
+                if(duplicateMatrix[i][j] == 0){
+                    if(j == 0 && !tank){
+                        players[i].setRole(Player.Role.tank);
+                        tank = true;
+                        break;
+                    }
+                    if(j == 1 && !dps){
+                        players[i].setRole(Player.Role.dps);
+                        dps = true;
+                        break;
+                    }
+                    if(j == 2 && !support){
+                        players[i].setRole(Player.Role.support);
+                        support = true;
+                        break;
+                    }
+                }
+            }
+
+            /**
+             * as a failsafe incase one role is not set
+             * find the unset role and put someone there
+             */
+            for(int p = 0; p < 3; p++){
+                if(getTankPlayer() == null){
+                    if( (players[(p)%3] == getDPSPlayer() || players[(p % 3)] == getSupportPlayer()) && (players[(p+1 % 3)] == getDPSPlayer() || players[(p+1 % 3)] == getSupportPlayer())){
+                        players[(p+2)%3].setRole(Player.Role.tank);
+                    }
+                }
+                if(getDPSPlayer() == null){
+                    if( (players[(p)%3] == getTankPlayer() || players[(p % 3)] == getSupportPlayer()) && (players[(p+1 % 3)] == getTankPlayer() || players[(p+1 % 3)] == getSupportPlayer())){
+                        players[(p+2)%3].setRole(Player.Role.dps);
+                    }
+                }
+                if(getSupportPlayer() == null){
+                    if( (players[(p)%3] == getTankPlayer() || players[(p % 3)] == getDPSPlayer()) && (players[(p+1 % 3)] == getTankPlayer() || players[(p+1 % 3)] == getDPSPlayer())){
+                        players[(p+2)%3].setRole(Player.Role.support);
+                    }
+                }
+            }
+            
+        }
+
+    }
