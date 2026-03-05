@@ -1,0 +1,15 @@
+# Ocean Destruction 2
+
+* Author: Wyatt Thompson / Participant 1342
+
+## Overview
+
+This program uses several custom-made classes to simulate a dynamic battle between the user and an enemy (who makes randomly-generated actions). The program is capable of scanning user input with the Scanner class.
+
+## Discussion
+
+While creating this project for the competition, I initially had a small amount of trouble understanding how the rules worked. Eventually, I figured out everything that I needed to implement in order to make the gameplay loop work, including the action-taking system and the attack mechanisms. The battle system in particular was what challenged me the most, as I had trouble figuring out how it worked overall. Ultimately, I was able to make almost every aspect of the game work to the best of my ability.
+
+## Sources used
+
+The main sources I used while creating this project were the Oracle Java Documentation website and minimal amounts of Stack Overflow. None of my code was directly created by any other source.
